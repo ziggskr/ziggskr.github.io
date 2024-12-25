@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>점수 선택</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f0f0f5;
+            padding: 20px;
+            margin: 0;
+        }
+
+        .rounded-box {
+            background-color: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            margin: 10px auto;
+        }
+
+        label {
+            display: block;
+            margin: 10px 0 5px;
+            font-weight: bold;
+        }
+
+        select {
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+            background-color: #f9f9f9;
+            transition: border-color 0.3s;
+        }
+
+        select:focus {
+            border-color: #007aff;
+            outline: none;
+        }
+
+        h2 {
+            margin: 0;
+            font-size: 1.5em;
+            color: #333;
+        }
+
+        strong {
+            color: #ff3b30;
+            font-size: 1.2em;
+        }
+
+        #resultMessage {
+            text-align: center;
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+<body>
+    <h1 style="text-align: center; font-size: 2em; color: #333; margin-bottom: 20px;">합격 점쟁이 찍찍</h1>
+
+    <div class="rounded-box">
+        <h2>커트라인: <strong><span id="cutoffScore">0.000</span></strong></h2>
+        <label for="cutoffSubjectiveScore">합격자 주관점수:</label>
+        <select id="cutoffSubjectiveScore" onchange="updateScore()">
+            <option value="최고 수">최고 수</option>
+            <option value="중간 수">중간 수</option>
+            <option value="최하 수">최하 수</option>
+            <option value="최고 우">최고 우</option>
+            <option value="중간 우">중간 우</option>
+            <option value="최하 우">최하 우</option>
+            <option value="최고 양">최고 양</option>
+            <option value="중간 양">중간 양</option>
+            <option value="최하 양">최하 양</option>
+        </select>
+
+        <label for="cutoffObjectiveErrors">합격자 틀린 갯수:</label>
+        <select id="cutoffObjectiveErrors" onchange="updateScore()">
+            <script>
+                for (let i = 0; i <= 20; i++) {
+                    document.write(`<option value="${i}">${i}</option>`);
+                }
+            </script>
+        </select>
+        
+        <p id="passObjectiveErrors"></p>
+    </div>
+
+    <div class="rounded-box">
+        <h2>나의 환산 점수: <strong><span id="finalScore">0.000</span></strong></h2>
+        <p id="resultMessage"></p>
+    </div>
+
+    <div class="rounded-box">
+        <h2>나의 근평 점수: <strong><span id="averageScore">0.000</span></strong></h2>
+        <label for="objectiveScore">객관점수:</label>
+        <select id="objectiveScore" onchange="updateScore()">
+            <script>
+                document.write(`<option value="30.000" selected>30.000</option>`);
+                for (let i = 29.900; i >= 25; i -= 0.100) {
+                    document.write(`<option value="${i.toFixed(3)}">${i.toFixed(3)}</option>`);
+                }
+            </script>
+        </select>
+
+        <label for="subjectiveScore">주관점수:</label>
+        <select id="subjectiveScore" onchange="updateScore()">
+            <option value="최고 수" selected>최고 수</option>
+            <option value="중간 수">중간 수</option>
+            <option value="최하 수">최하 수</option>
+            <option value="최고 우">최고 우</option>
+            <option value="중간 우">중간 우</option>
+            <option value="최하 우">최하 우</option>
+            <option value="최고 양">최고 양</option>
+            <option value="중간 양">중간 양</option>
+            <option value="최하 양">최하 양</option>
+        </select>
+    </div>
+
+    <div class="rounded-box">
+        <h2>나의 시험 점수: <strong><span id="testScore">0.000</span></strong></h2>
+        <label for="criminalLawErrors">형사법 틀린 갯수:</label>
+        <select id="criminalLawErrors" onchange="updateScore()">
+            <script>
+                for (let i = 0; i <= 80; i++) {
+                    document.write(`<option value="${i}">${i}</option>`);
+                }
+            </script>
+        </select>
+
+        <label for="practicalErrors">실무종합 틀린 갯수:</label>
+        <select id="practicalErrors" onchange="updateScore()">
+            <script>
+                for (let i = 0; i <= 40; i++) {
+                    document.write(`<option value="${i}">${i}</option>`);
+                }
+            </script>
+        </select>
+    </div>
+
+    <script>
+        window.onload = function() {
+            updateScore(); // 페이지 로드 시 updateScore 함수 실행
+        };
+
+        const subjectiveScores = {
+            '최고 수': 20.0,
+            '중간 수': 19.5,
+            '최하 수': 19.0,
+            '최고 우': 18.875,
+            '중간 우': 17.5,
+            '최하 우': 16.0,
+            '최고 양': 15.875,
+            '중간 양': 13.0,
+            '최하 양': 10.0
+        };
+
+        function updateScore() {
+            const objectiveScore = parseFloat(document.getElementById('objectiveScore').value);
+            const subjectiveScore = subjectiveScores[document.getElementById('subjectiveScore').value];
+            
+            // 근평 점수 계산
+            const averageScore = (objectiveScore + subjectiveScore).toFixed(3);
+            document.getElementById('averageScore').innerText = averageScore;
+
+            // 형사법과 실무종합 점수 계산
+            const criminalLawErrors = parseInt(document.getElementById('criminalLawErrors').value);
+            const practicalErrors = parseInt(document.getElementById('practicalErrors').value);
+            
+            const criminalLawScore = (80 - criminalLawErrors) * 0.525; // 총 80문제
+            const practicalScore = (40 - practicalErrors) * 0.45; // 총 40문제
+            
+            // 시험 점수 표시
+            const testScore = (criminalLawScore + practicalScore).toFixed(3);
+            document.getElementById('testScore').innerText = testScore;
+
+            // 최종 환산 점수 계산
+            const finalScore = (averageScore * 0.8 + parseFloat(testScore)).toFixed(3);
+            document.getElementById('finalScore').innerText = finalScore;
+
+            // 커트라인 점수 계산
+            const cutoffSubjectiveScore = subjectiveScores[document.getElementById('cutoffSubjectiveScore').value];
+            const cutoffObjectiveErrors = parseInt(document.getElementById('cutoffObjectiveErrors').value);
+            const calculatedScore = (((30 + cutoffSubjectiveScore) * 0.8) + (60 - (cutoffObjectiveErrors * 0.5))).toFixed(3);
+            document.getElementById('cutoffScore').innerText = calculatedScore;
+
+            // 합격하려면 객관식을 몇 개 이내로 틀려야 하는지 계산
+            const cutoffScore = parseFloat(document.getElementById('cutoffScore').innerText);
+            const maxErrorsForPass = Math.floor((60 - (cutoffScore - averageScore * 0.8)) / 0.5);
+            document.getElementById('passObjectiveErrors').innerHTML = `합격하려면 객관식을 <strong style="color: red;">${maxErrorsForPass}</strong>개 이내로 틀려야 합니다.`;
+
+            // 결과 메시지 생성
+            let resultMessageText;
+            const precision = 0.001; // 소수점 비교의 정밀도 설정
+            if (finalScore > cutoffScore) {
+                resultMessageText = "합격 점수 입니다.";
+                document.getElementById('resultMessage').style.color = "blue";
+            }else if (finalScore < cutoffScore) {
+                resultMessageText = "불합격 점수입니다.";
+                document.getElementById('resultMessage').style.color = "red";
+            }else {
+                resultMessageText = "커트라인 점수입니다.";
+                document.getElementById('resultMessage').style.color = "black";
+            }
+            document.getElementById('resultMessage').innerText = resultMessageText;
+        }
+    </script>
+</body>
+</html>
